@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { promises as fsPromises } from 'node:fs';
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import xxhash from 'xxhashjs';
 import type { ImageOption } from '@/common/type/types';

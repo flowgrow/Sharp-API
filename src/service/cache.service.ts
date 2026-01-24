@@ -1,11 +1,11 @@
 import { CACHE_MANAGER, type Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import xxhash from 'xxhashjs';
 import type { CacheResult, ImageCacheOption, ImageFingerPrint } from '@/common/interface/interfaces';
-import type { UtilsService } from '@/common/utils/utils.service';
-import type { ImageProcessingService } from './image-processing.service';
+import { UtilsService } from '@/common/utils/utils.service';
+import { ImageProcessingService } from './image-processing.service';
 
 @Injectable()
 export class CacheService {

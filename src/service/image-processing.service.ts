@@ -1,12 +1,12 @@
 import { promises as fsPromises } from 'node:fs';
 import { dirname, join, parse } from 'node:path';
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import sharp from 'sharp';
 import type { ProcessedImage } from '@/common/interface/interfaces';
 import type { ImageFormat, SaveOptions, SavePath } from '@/common/type/types';
-import type { UtilsService } from '@/common/utils/utils.service';
+import { UtilsService } from '@/common/utils/utils.service';
 
 @Injectable()
 export class ImageProcessingService {

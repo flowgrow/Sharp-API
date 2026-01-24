@@ -1,12 +1,12 @@
 import path from 'node:path';
 import { isString } from '@carry0987/utils';
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import type { FetchImageResult } from '@/common/interface/interfaces';
 import type { ImageFormat } from '@/common/type/types';
-import type { UtilsService } from '@/common/utils/utils.service';
-import type { ParserService } from './parser.service';
+import { UtilsService } from '@/common/utils/utils.service';
+import { ParserService } from './parser.service';
 
 @Injectable()
 export class ImageFetchService {

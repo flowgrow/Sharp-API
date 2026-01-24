@@ -1,14 +1,14 @@
 import path from 'node:path';
 import { isString } from '@carry0987/utils';
 import { Controller, Get, Headers, HttpStatus, Param, Res } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
-import type { UtilsService } from '@/common/utils/utils.service';
-import type { CacheService } from '@/service/cache.service';
-import type { ImageFetchService } from '@/service/image-fetch.service';
-import type { ImageProcessingService } from '@/service/image-processing.service';
-import type { ParserService } from '@/service/parser.service';
-import type { SignatureService } from '@/service/signature.service';
+import { UtilsService } from '@/common/utils/utils.service';
+import { CacheService } from '@/service/cache.service';
+import { ImageFetchService } from '@/service/image-fetch.service';
+import { ImageProcessingService } from '@/service/image-processing.service';
+import { ParserService } from '@/service/parser.service';
+import { SignatureService } from '@/service/signature.service';
 
 @Controller()
 export class ImageController {

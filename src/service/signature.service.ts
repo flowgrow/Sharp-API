@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
-import type { UtilsService } from '../common/utils/utils.service';
+import { ConfigService } from '@nestjs/config';
+import { UtilsService } from '../common/utils/utils.service';
 
 @Injectable()
 export class SignatureService {
