@@ -1,4 +1,4 @@
-import { ImageFormat } from '@/common/type/types';
+import type { ImageFormat } from '@/common/type/types';
 
 export interface ProcessedImage {
     buffer: Buffer;

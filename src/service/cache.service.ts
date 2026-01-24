@@ -1,15 +1,11 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { UtilsService } from '@/common/utils/utils.service';
-import {
-    ImageCacheOption,
-    ImageFingerPrint,
-    CacheResult,
-} from '@/common/interface/interfaces';
-import { ImageProcessingService } from './image-processing.service';
-import { Response } from 'express';
+import { CACHE_MANAGER, type Cache } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
 import xxhash from 'xxhashjs';
+import type { CacheResult, ImageCacheOption, ImageFingerPrint } from '@/common/interface/interfaces';
+import type { UtilsService } from '@/common/utils/utils.service';
+import type { ImageProcessingService } from './image-processing.service';
 
 @Injectable()
 export class CacheService {
@@ -26,13 +22,10 @@ export class CacheService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private utilsService: UtilsService,
         private imageProcessingService: ImageProcessingService,
-        private configService: ConfigService,
+        private configService: ConfigService
     ) {
         this.cache = this.configService.get<boolean>('CACHE', false);
-        this.strictCache = this.configService.get<boolean>(
-            'STRICT_CACHE',
-            false,
-        );
+        this.strictCache = this.configService.get<boolean>('STRICT_CACHE', false);
         this.cacheTTL = this.configService.get<number>('CACHE_TTL', 3600);
         this.checkETag = this.configService.get<boolean>('CHECK_ETAG', false);
     }
@@ -47,8 +40,7 @@ export class CacheService {
         }
 
         const { fingerPrint, sourceURL, clientETag } = options;
-        const { imageBuffer, sourceFormat, format, width, height, suffix } =
-            fingerPrint;
+        const { imageBuffer, sourceFormat, format, width, height, suffix } = fingerPrint;
 
         // Set image buffer
         this.imageBuffer = imageBuffer;
@@ -57,28 +49,23 @@ export class CacheService {
         const validCache = await this.validateCache(sourceURL, fingerPrint);
 
         // Get save path info
-        const savePathInfo = await this.imageProcessingService.getImageSavePath(
-            {
-                sourcePath: sourceURL,
-                format,
-                originalFormat: sourceFormat,
-                suffix,
-            },
-        );
+        const savePathInfo = await this.imageProcessingService.getImageSavePath({
+            sourcePath: sourceURL,
+            format,
+            originalFormat: sourceFormat,
+            suffix
+        });
 
         // Check if image exists
-        const imageExists = await this.utilsService.checkFileExists(
-            savePathInfo.path,
-        );
+        const imageExists = await this.utilsService.checkFileExists(savePathInfo.path);
 
         if (imageExists && validCache) {
             if (this.checkETag && !this.res.getHeader('ETag')) {
-                const cacheImage: Buffer =
-                    await this.utilsService.readFileAsync(savePathInfo.path);
+                const cacheImage: Buffer = await this.utilsService.readFileAsync(savePathInfo.path);
                 const eTag = this.utilsService.generateETag(cacheImage, {
                     width,
                     height,
-                    suffix,
+                    suffix
                 });
                 if (clientETag === eTag) {
                     return { cachedPath: savePathInfo.path, eTag };
@@ -91,20 +78,14 @@ export class CacheService {
         return { cachedPath: null, eTag: null };
     }
 
-    public async setCache(
-        url: string,
-        options: ImageFingerPrint,
-    ): Promise<void> {
+    public async setCache(url: string, options: ImageFingerPrint): Promise<void> {
         const hash = this.generateCacheHash(url, options);
         const ttl = this.cacheTTL * 1000;
         url += options.format ? `.${options.format}` : '';
         await this.cacheManager.set(url, hash, ttl);
     }
 
-    public async validateCache(
-        url: string,
-        options: ImageFingerPrint,
-    ): Promise<boolean> {
+    public async validateCache(url: string, options: ImageFingerPrint): Promise<boolean> {
         const hash = this.generateCacheHash(url, options);
         url += options.format ? `.${options.format}` : '';
         const cacheValue = await this.cacheManager.get(url);
@@ -123,7 +104,7 @@ export class CacheService {
             format,
             width,
             height,
-            suffix,
+            suffix
         };
         const optionsString = JSON.stringify(cacheOption);
 

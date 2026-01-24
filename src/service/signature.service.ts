@@ -1,7 +1,7 @@
+import crypto from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { UtilsService } from '../common/utils/utils.service';
-import crypto from 'crypto';
+import type { ConfigService } from '@nestjs/config';
+import type { UtilsService } from '../common/utils/utils.service';
 
 @Injectable()
 export class SignatureService {
@@ -10,7 +10,7 @@ export class SignatureService {
 
     constructor(
         private readonly utilsService: UtilsService,
-        private configService: ConfigService,
+        private configService: ConfigService
     ) {
         const imageKey = this.configService.get<string>('IMAGE_KEY');
         const imageSalt = this.configService.get<string>('IMAGE_SALT');
@@ -27,12 +27,8 @@ export class SignatureService {
     }
 
     // Method to decode and verify the signature
-    public decodeAndVerifySignature(
-        signature: string,
-        encPath: string,
-    ): boolean {
-        const signatureDecoded: Buffer =
-            this.utilsService.base64urlDecode(signature);
+    public decodeAndVerifySignature(signature: string, encPath: string): boolean {
+        const signatureDecoded: Buffer = this.utilsService.base64urlDecode(signature);
 
         return this.verifySignature(encPath, signatureDecoded);
     }
@@ -44,16 +40,12 @@ export class SignatureService {
                 null,
                 500,
                 'Internal server error. The image key or salt is not set.',
-                undefined,
+                undefined
             );
             throw new Error('The image key or salt is not set.');
         }
         path = this.utilsService.removeTrailingSlash(path);
-        const hash: Buffer = crypto
-            .createHmac('sha256', this.imageKey)
-            .update(this.imageSalt)
-            .update(path)
-            .digest();
+        const hash: Buffer = crypto.createHmac('sha256', this.imageKey).update(this.imageSalt).update(path).digest();
 
         return signature.equals(hash.subarray(0, signature.length));
     }

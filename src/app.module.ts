@@ -1,23 +1,23 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ShutdownService } from './service/shutdown.service';
 import { UtilsService } from './common/utils/utils.service';
-import { ParserService } from './service/parser.service';
-import { CacheService } from './service/cache.service';
-import { ImageProcessingService } from './service/image-processing.service';
-import { ImageFetchService } from './service/image-fetch.service';
-import { SignatureService } from './service/signature.service';
 import { ImageController } from './image/image.controller';
+import { CacheService } from './service/cache.service';
+import { ImageFetchService } from './service/image-fetch.service';
+import { ImageProcessingService } from './service/image-processing.service';
+import { ParserService } from './service/parser.service';
+import { ShutdownService } from './service/shutdown.service';
+import { SignatureService } from './service/signature.service';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
-            envFilePath: ['.env', '.env.local'],
+            envFilePath: ['.env', '.env.local']
         }),
-        CacheModule.register(),
+        CacheModule.register()
     ],
     controllers: [AppController, ImageController],
     providers: [
@@ -28,7 +28,7 @@ import { ImageController } from './image/image.controller';
         CacheService,
         ImageProcessingService,
         ImageFetchService,
-        SignatureService,
-    ],
+        SignatureService
+    ]
 })
 export class AppModule {}

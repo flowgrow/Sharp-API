@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { INestApplication } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import sharp from 'sharp';
 import { AppModule } from './app.module';
 import { ShutdownService } from './service/shutdown.service';
@@ -12,10 +12,7 @@ async function logServiceInfo(app: INestApplication, port: number) {
     const BASE_PATH = configService.get<string>('BASE_PATH', '/app/images');
     const ALLOW_FROM_URL = configService.get<boolean>('ALLOW_FROM_URL', false);
     const IMAGE_DEBUG = configService.get<boolean>('IMAGE_DEBUG', false);
-    const AUTO_DETECT_WEBP = configService.get<boolean>(
-        'AUTO_DETECT_WEBP',
-        false,
-    );
+    const AUTO_DETECT_WEBP = configService.get<boolean>('AUTO_DETECT_WEBP', false);
     const CACHE = configService.get<boolean>('CACHE', false);
     const STRICT_CACHE = configService.get<boolean>('STRICT_CACHE', false);
     const CACHE_TTL = configService.get<number>('CACHE_TTL', 3600);
@@ -51,12 +48,8 @@ async function bootstrap() {
 
     await logServiceInfo(app, port);
 
-    process.on('SIGTERM', () =>
-        shutdownService.gracefulShutdown(server, 'SIGTERM'),
-    );
-    process.on('SIGINT', () =>
-        shutdownService.gracefulShutdown(server, 'SIGINT'),
-    );
+    process.on('SIGTERM', () => shutdownService.gracefulShutdown(server, 'SIGTERM'));
+    process.on('SIGINT', () => shutdownService.gracefulShutdown(server, 'SIGINT'));
 }
 
 bootstrap();

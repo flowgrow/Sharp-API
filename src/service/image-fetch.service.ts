@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import path from 'node:path';
 import { isString } from '@carry0987/utils';
-import { ParserService } from './parser.service';
-import { UtilsService } from '@/common/utils/utils.service';
-import { FetchImageResult } from '@/common/interface/interfaces';
-import { ImageFormat } from '@/common/type/types';
+import { Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import path from 'path';
+import type { FetchImageResult } from '@/common/interface/interfaces';
+import type { ImageFormat } from '@/common/type/types';
+import type { UtilsService } from '@/common/utils/utils.service';
+import type { ParserService } from './parser.service';
 
 @Injectable()
 export class ImageFetchService {
@@ -16,16 +16,10 @@ export class ImageFetchService {
     constructor(
         private readonly parserService: ParserService,
         private readonly utilsService: UtilsService,
-        private configService: ConfigService,
+        private configService: ConfigService
     ) {
-        this.basePath = this.configService.get<string>(
-            'BASE_PATH',
-            '/app/images',
-        );
-        this.allowFromUrl = this.configService.get<boolean>(
-            'ALLOW_FROM_URL',
-            false,
-        );
+        this.basePath = this.configService.get<string>('BASE_PATH', '/app/images');
+        this.allowFromUrl = this.configService.get<boolean>('ALLOW_FROM_URL', false);
     }
 
     // Method to fetch the image from URL or local file
@@ -35,14 +29,12 @@ export class ImageFetchService {
         let filePath: string | undefined;
 
         if (this.allowFromUrl && sourceURL.match(/^https?:\/\//)) {
-            const { imageBuffer: fetchedImageBuffer, format: fetchedFormat } =
-                await this.fetchImageFromUrl(sourceURL);
+            const { imageBuffer: fetchedImageBuffer, format: fetchedFormat } = await this.fetchImageFromUrl(sourceURL);
             imageBuffer = fetchedImageBuffer;
             format = fetchedFormat;
         } else {
             filePath = path.resolve(this.basePath, sourceURL);
-            const { imageBuffer: fetchedImageBuffer, format: fetchedFormat } =
-                await this.fetchImageFromLocal(filePath);
+            const { imageBuffer: fetchedImageBuffer, format: fetchedFormat } = await this.fetchImageFromLocal(filePath);
             imageBuffer = fetchedImageBuffer;
             format = fetchedFormat;
         }
@@ -55,7 +47,7 @@ export class ImageFetchService {
 
         const response = await axios<Buffer>({
             url: sourceURL,
-            responseType: 'arraybuffer',
+            responseType: 'arraybuffer'
         });
         const imageBuffer = response.data;
         const contentType = response.headers['Content-Type'];

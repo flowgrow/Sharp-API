@@ -1,13 +1,4 @@
-export type ImageFormat =
-    | 'webp'
-    | 'avif'
-    | 'png'
-    | 'jpeg'
-    | 'jpg'
-    | 'gif'
-    | 'bmp'
-    | 'heif'
-    | 'heic';
+export type ImageFormat = 'webp' | 'avif' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'bmp' | 'heif' | 'heic';
 export type ImageOption = { width?: number; height?: number; suffix?: string };
 export type SavePath = { dir: string; path: string };
 export type SaveOptions = {

@@ -1,12 +1,12 @@
+import { promises as fsPromises } from 'node:fs';
+import { dirname, join, parse } from 'node:path';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { UtilsService } from '@/common/utils/utils.service';
-import { ProcessedImage } from '@/common/interface/interfaces';
-import { ImageFormat, SavePath, SaveOptions } from '@/common/type/types';
-import { Response } from 'express';
+import type { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
 import sharp from 'sharp';
-import { promises as fsPromises } from 'fs';
-import { join, dirname, parse } from 'path';
+import type { ProcessedImage } from '@/common/interface/interfaces';
+import type { ImageFormat, SaveOptions, SavePath } from '@/common/type/types';
+import type { UtilsService } from '@/common/utils/utils.service';
 
 @Injectable()
 export class ImageProcessingService {
@@ -15,21 +15,13 @@ export class ImageProcessingService {
 
     constructor(
         private configService: ConfigService,
-        private utilsService: UtilsService,
+        private utilsService: UtilsService
     ) {
-        this.processedDir = this.configService.get<string>(
-            'PROCESSED_DIR',
-            '/app/processed',
-        );
+        this.processedDir = this.configService.get<string>('PROCESSED_DIR', '/app/processed');
         this.saveImage = this.configService.get<boolean>('SAVE_IMAGE', false);
     }
 
-    async processImage(
-        buffer: Buffer,
-        width?: number,
-        height?: number,
-        format?: ImageFormat,
-    ): Promise<ProcessedImage> {
+    async processImage(buffer: Buffer, width?: number, height?: number, format?: ImageFormat): Promise<ProcessedImage> {
         let image = sharp(buffer);
         let metadata = await image.metadata();
 
@@ -40,9 +32,7 @@ export class ImageProcessingService {
         }
 
         // Check if image is animated
-        const checkAnimated = ['gif', 'webp', 'avif', 'heic', 'heif'].includes(
-            format,
-        );
+        const checkAnimated = ['gif', 'webp', 'avif', 'heic', 'heif'].includes(format);
         if (checkAnimated && metadata.pages && metadata.pages > 1) {
             image = sharp(buffer, { animated: true });
             metadata = await image.metadata();
@@ -60,8 +50,7 @@ export class ImageProcessingService {
             }
 
             width = width && width < metadata.width ? width : metadata.width;
-            height =
-                height && height < metadata.height ? height : metadata.height;
+            height = height && height < metadata.height ? height : metadata.height;
 
             image = image.resize(width, height);
         }
@@ -86,9 +75,7 @@ export class ImageProcessingService {
                 break;
             case 'heic':
             case 'heif':
-                processedBuffer = await image
-                    .heif({ compression: 'hevc' })
-                    .toBuffer();
+                processedBuffer = await image.heif({ compression: 'hevc' }).toBuffer();
                 break;
             default:
                 throw new Error(`Unsupported image format: ${format}`);
@@ -97,7 +84,7 @@ export class ImageProcessingService {
         return {
             buffer: processedBuffer,
             format: format,
-            originalFormat: imageFormat,
+            originalFormat: imageFormat
         };
     }
 
@@ -108,44 +95,30 @@ export class ImageProcessingService {
             throw new Error('Format is required');
         }
 
-        const relativeSourcePath: string = sourcePath.startsWith('/')
-            ? sourcePath.substring(1)
-            : sourcePath;
+        const relativeSourcePath: string = sourcePath.startsWith('/') ? sourcePath.substring(1) : sourcePath;
         const parsedPath = parse(relativeSourcePath);
         const directory: string = join(this.processedDir, parsedPath.dir);
         const baseName = parsedPath.name + (suffix ? `${suffix}` : '');
-        const newExtension =
-            format === originalFormat ? parsedPath.ext : `.${format}`;
+        const newExtension = format === originalFormat ? parsedPath.ext : `.${format}`;
         const savePath: string = join(directory, `${baseName}${newExtension}`);
 
         return {
             dir: dirname(savePath),
-            path: savePath,
+            path: savePath
         };
     }
 
-    async saveProcessedImage(
-        processedBuffer: Buffer,
-        options: SavePath,
-    ): Promise<void> {
+    async saveProcessedImage(processedBuffer: Buffer, options: SavePath): Promise<void> {
         if (this.saveImage) {
             const { dir, path } = options;
             try {
                 await fsPromises.mkdir(dir, {
-                    recursive: true,
+                    recursive: true
                 });
                 await fsPromises.writeFile(path, processedBuffer);
-                this.utilsService.handleResponse(
-                    null,
-                    200,
-                    `Image saved to ${path}`,
-                );
+                this.utilsService.handleResponse(null, 200, `Image saved to ${path}`);
             } catch (error) {
-                this.utilsService.handleResponse(
-                    null,
-                    500,
-                    `Error saving processed image: ${error}`,
-                );
+                this.utilsService.handleResponse(null, 500, `Error saving processed image: ${error}`);
             }
         }
     }
@@ -157,8 +130,8 @@ export class ImageProcessingService {
                     width: 1,
                     height: 1,
                     channels: 4,
-                    background: { r: 255, g: 255, b: 255, alpha: 0 },
-                },
+                    background: { r: 255, g: 255, b: 255, alpha: 0 }
+                }
             })
                 .png()
                 .toBuffer();
@@ -167,13 +140,7 @@ export class ImageProcessingService {
             this.utilsService.handleResponse(null, 200, 'Sent blank image.');
         } catch (error: unknown) {
             const errMsg: string = 'Error generating blank image';
-            this.utilsService.handleResponse(
-                res,
-                500,
-                errMsg,
-                errMsg,
-                error as Error,
-            );
+            this.utilsService.handleResponse(res, 500, errMsg, errMsg, error as Error);
         }
     }
 }

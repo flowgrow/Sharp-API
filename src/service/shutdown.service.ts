@@ -1,6 +1,6 @@
+import type { Server } from 'node:http';
 import { Injectable } from '@nestjs/common';
-import { Server } from 'http';
-import { UtilsService } from '@/common/utils/utils.service';
+import type { UtilsService } from '@/common/utils/utils.service';
 
 @Injectable()
 export class ShutdownService {

@@ -1,28 +1,23 @@
+import crypto from 'node:crypto';
+import { promises as fsPromises } from 'node:fs';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { ImageOption } from '@/common/type/types';
-import { Response } from 'express';
-import { promises as fsPromises } from 'fs';
-import crypto from 'crypto';
+import type { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
 import xxhash from 'xxhashjs';
+import type { ImageOption } from '@/common/type/types';
 
 @Injectable()
 export class UtilsService {
     private readonly sourceUrlEncryptionKey: Buffer;
 
     constructor(private configService: ConfigService) {
-        const sourceUrlEncryptionKey = this.configService.get<string>(
-            'SOURCE_URL_ENCRYPTION_KEY',
-        );
+        const sourceUrlEncryptionKey = this.configService.get<string>('SOURCE_URL_ENCRYPTION_KEY');
 
         if (!sourceUrlEncryptionKey) {
             throw new Error('The source URL encryption key is not set.');
         }
 
-        this.sourceUrlEncryptionKey = Buffer.from(
-            sourceUrlEncryptionKey,
-            'hex',
-        );
+        this.sourceUrlEncryptionKey = Buffer.from(sourceUrlEncryptionKey, 'hex');
     }
 
     public removeTrailingSlash(str: string): string {
@@ -37,7 +32,7 @@ export class UtilsService {
         try {
             await fsPromises.access(filePath, fsPromises.constants.R_OK);
             return true;
-        } catch (error) {
+        } catch (_error) {
             return false;
         }
     }
@@ -45,9 +40,7 @@ export class UtilsService {
     public generateETag(buffer: Buffer, options: ImageOption): string {
         const optionsString = JSON.stringify(options);
 
-        return xxhash
-            .h32(buffer.toString() + optionsString, 0xabcd)
-            .toString(16);
+        return xxhash.h32(buffer.toString() + optionsString, 0xabcd).toString(16);
     }
 
     public handleResponse(
@@ -55,7 +48,7 @@ export class UtilsService {
         statusCode: number,
         logMessage: string,
         clientMessage?: string,
-        error?: Error,
+        error?: Error
     ) {
         if (error) {
             console.error(logMessage, error);
@@ -82,7 +75,7 @@ export class UtilsService {
                 null,
                 500,
                 'Internal server error. The source URL encryption key is not set.',
-                undefined,
+                undefined
             );
             throw new Error('The source URL encryption key is not set.');
         }
@@ -91,16 +84,9 @@ export class UtilsService {
         // aes-256-gcm requires a 16-byte IV and a separate authentication tag
         const iv: Buffer = encrypted.subarray(0, ivLength);
         const tag: Buffer = encrypted.subarray(encrypted.length - tagLength);
-        const encryptedText: Buffer = encrypted.subarray(
-            ivLength,
-            encrypted.length - tagLength,
-        ); // Consider tag is last 16 bytes
+        const encryptedText: Buffer = encrypted.subarray(ivLength, encrypted.length - tagLength); // Consider tag is last 16 bytes
         // Use aes-256-gcm for decryption.
-        const decipher = crypto.createDecipheriv(
-            'aes-256-gcm',
-            this.sourceUrlEncryptionKey,
-            iv,
-        );
+        const decipher = crypto.createDecipheriv('aes-256-gcm', this.sourceUrlEncryptionKey, iv);
         // Set the authentication tag from the encrypted data.
         decipher.setAuthTag(tag);
         // Update decipher with encrypted data and return concatenated decrypted data.
@@ -115,7 +101,7 @@ export class UtilsService {
                 401,
                 'Authentication failed. The encrypted message or the key may be tampered with.',
                 undefined,
-                error as Error,
+                error as Error
             );
         }
 
