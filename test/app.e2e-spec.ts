@@ -20,6 +20,11 @@ describe('AppController (e2e)', () => {
         await app.init();
     });
 
+    afterEach(async () => {
+        await app.close();
+        jest.restoreAllMocks();
+    });
+
     it('/ (GET)', () => {
         return request(app.getHttpServer()).get('/').expect(200).expect('Welcome to the Sharp API !');
     });
@@ -56,6 +61,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/upload/rs:20:20/webp?quality=30 (POST)', async () => {
+        const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
         const imageBuffer = await sharp({
             create: {
                 width: 80,
@@ -80,6 +86,10 @@ describe('AppController (e2e)', () => {
         expect(metadata.format).toBe('webp');
         expect(metadata.width).toBe(20);
         expect(metadata.height).toBe(20);
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"event":"image_request"'));
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"fileName":"fixture.jpg"'));
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"outputFormat":"webp"'));
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"quality":30'));
     });
 
     it('/upload/rs:20:20/png without file (POST)', () => {

@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { promises as fsPromises } from 'node:fs';
+import path from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
@@ -65,6 +66,40 @@ export class UtilsService {
         }
     }
 
+    public logImageRequest(context: {
+        requestType: string;
+        sourceReference: string;
+        sourceFormat?: string;
+        outputFormat?: string;
+        processingOptions: string;
+        width?: number;
+        height?: number;
+        suffix?: string;
+        quality?: number;
+        acceptHeader?: string;
+        cacheable?: boolean;
+    }) {
+        console.log(
+            JSON.stringify({
+                event: 'image_request',
+                requestType: context.requestType,
+                fileName: this.extractSourceName(context.sourceReference),
+                sourceReference: context.sourceReference,
+                sourceFormat: context.sourceFormat || null,
+                outputFormat: context.outputFormat || null,
+                processingOptions: context.processingOptions,
+                sharp: {
+                    width: context.width || null,
+                    height: context.height || null,
+                    suffix: context.suffix || null,
+                    quality: context.quality || null
+                },
+                acceptHeader: context.acceptHeader || '',
+                cacheable: !!context.cacheable
+            })
+        );
+    }
+
     public base64urlDecode(str: string): Buffer {
         return Buffer.from(str.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
     }
@@ -106,5 +141,15 @@ export class UtilsService {
         }
 
         return decrypted.toString();
+    }
+
+    private extractSourceName(sourceReference: string): string {
+        try {
+            const parsedUrl = new URL(sourceReference);
+
+            return path.posix.basename(decodeURIComponent(parsedUrl.pathname || '')) || sourceReference;
+        } catch {
+            return path.basename(sourceReference) || sourceReference;
+        }
     }
 }

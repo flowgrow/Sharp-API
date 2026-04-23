@@ -68,6 +68,7 @@ export class ImageController {
             const { imageBuffer, format: sourceFormat, filePath } = await this.imageFetchService.fetchImage(sourceURL);
             await this.processAndRespond({
                 res,
+                requestType: 'encrypted_url',
                 acceptHeader,
                 clientETag,
                 processingOptions,
@@ -116,6 +117,7 @@ export class ImageController {
 
             await this.processAndRespond({
                 res,
+                requestType: 'upload',
                 acceptHeader,
                 clientETag: '',
                 processingOptions,
@@ -138,6 +140,7 @@ export class ImageController {
 
     private async processAndRespond(options: {
         res: Response;
+        requestType: string;
         acceptHeader?: string;
         clientETag?: string;
         processingOptions: string;
@@ -150,6 +153,7 @@ export class ImageController {
     }): Promise<void> {
         const {
             res,
+            requestType,
             acceptHeader = '',
             clientETag = '',
             processingOptions,
@@ -168,20 +172,34 @@ export class ImageController {
             format = 'webp';
         }
 
+        this.utilsService.logImageRequest({
+            requestType,
+            sourceReference,
+            sourceFormat,
+            outputFormat: format,
+            processingOptions,
+            width,
+            height,
+            suffix,
+            quality,
+            acceptHeader,
+            cacheable: isString(filePath)
+        });
+
         if (isString(filePath)) {
             this.cacheService.setResponse(res);
             const { cachedPath, eTag } = await this.cacheService.handleCache({
                 fingerPrint: {
                     imageBuffer,
                     sourceFormat,
-                        format,
-                        width,
-                        height,
-                        suffix,
-                        quality
-                    },
-                    sourceURL: sourceReference,
-                    clientETag
+                    format,
+                    width,
+                    height,
+                    suffix,
+                    quality
+                },
+                sourceURL: sourceReference,
+                clientETag
             });
             if (eTag) {
                 res.setHeader('ETag', eTag);
