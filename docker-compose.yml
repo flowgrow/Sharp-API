@@ -1,8 +1,13 @@
 services:
   sharp-api:
     image: carry0987/sharp-api:latest
+
+    # ✅ FIX: remove host binding, keep internal port
     ports:
-      - 3000:3000
+      - "3000"
+
+    restart: unless-stopped
+
     environment:
       - NODE_ENV=production
       - AUTO_DETECT_WEBP=false
@@ -11,6 +16,18 @@ services:
       - CACHE=true
       - CHECK_ETAG=false
       - IMAGE_DEBUG=false
+
     volumes:
-      - ./images:/app/images
-      - ./processed:/app/processed
+      # ⚠️ IMPORTANT: these paths MUST exist in Coolify
+      - sharp-images:/app/images
+      - sharp-processed:/app/processed
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  sharp-images:
+  sharp-processed:
