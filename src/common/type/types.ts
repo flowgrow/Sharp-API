@@ -1,9 +1,10 @@
 export type ImageFormat = 'webp' | 'avif' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'bmp' | 'heif' | 'heic';
-export type ImageOption = { width?: number; height?: number; suffix?: string };
+export type ImageOption = { width?: number; height?: number; suffix?: string; quality?: number };
 export type SavePath = { dir: string; path: string };
 export type SaveOptions = {
     sourcePath: string;
     format?: ImageFormat;
     originalFormat?: ImageFormat;
     suffix?: string;
+    quality?: number;
 };

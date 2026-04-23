@@ -40,7 +40,7 @@ export class CacheService {
         }
 
         const { fingerPrint, sourceURL, clientETag } = options;
-        const { imageBuffer, sourceFormat, format, width, height, suffix } = fingerPrint;
+        const { imageBuffer, sourceFormat, format, width, height, suffix, quality } = fingerPrint;
 
         // Set image buffer
         this.imageBuffer = imageBuffer;
@@ -53,7 +53,8 @@ export class CacheService {
             sourcePath: sourceURL,
             format,
             originalFormat: sourceFormat,
-            suffix
+            suffix,
+            quality
         });
 
         // Check if image exists
@@ -65,7 +66,8 @@ export class CacheService {
                 const eTag = this.utilsService.generateETag(cacheImage, {
                     width,
                     height,
-                    suffix
+                    suffix,
+                    quality
                 });
                 if (clientETag === eTag) {
                     return { cachedPath: savePathInfo.path, eTag };
@@ -98,13 +100,14 @@ export class CacheService {
     }
 
     private generateCacheHash(url: string, options: ImageFingerPrint): string {
-        const { imageBuffer, format, width, height, suffix } = options;
+        const { imageBuffer, format, width, height, suffix, quality } = options;
         const cacheOption = {
             imageBuffer,
             format,
             width,
             height,
-            suffix
+            suffix,
+            quality
         };
         const optionsString = JSON.stringify(cacheOption);
 

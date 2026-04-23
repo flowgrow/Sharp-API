@@ -21,7 +21,7 @@ export class ImageProcessingService {
         this.saveImage = this.configService.get<boolean>('SAVE_IMAGE', false);
     }
 
-    async processImage(buffer: Buffer, width?: number, height?: number, format?: ImageFormat): Promise<ProcessedImage> {
+    async processImage(buffer: Buffer, width?: number, height?: number, format?: ImageFormat, quality?: number): Promise<ProcessedImage> {
         let image = sharp(buffer);
         let metadata = await image.metadata();
 
@@ -58,17 +58,17 @@ export class ImageProcessingService {
         let processedBuffer: Buffer;
         switch (format) {
             case 'webp':
-                processedBuffer = await image.webp().toBuffer();
+                processedBuffer = await image.webp(quality ? { quality } : {}).toBuffer();
                 break;
             case 'avif':
-                processedBuffer = await image.avif().toBuffer();
+                processedBuffer = await image.avif(quality ? { quality } : {}).toBuffer();
                 break;
             case 'png':
                 processedBuffer = await image.png().toBuffer();
                 break;
             case 'jpeg':
             case 'jpg':
-                processedBuffer = await image.jpeg().toBuffer();
+                processedBuffer = await image.jpeg(quality ? { quality } : {}).toBuffer();
                 break;
             case 'gif':
                 processedBuffer = await image.gif().toBuffer();
@@ -89,7 +89,7 @@ export class ImageProcessingService {
     }
 
     async getImageSavePath(options: SaveOptions): Promise<SavePath> {
-        const { sourcePath, format, originalFormat, suffix } = options;
+        const { sourcePath, format, originalFormat, suffix, quality } = options;
 
         if (!format || !originalFormat) {
             throw new Error('Format is required');
@@ -98,7 +98,8 @@ export class ImageProcessingService {
         const relativeSourcePath: string = sourcePath.startsWith('/') ? sourcePath.substring(1) : sourcePath;
         const parsedPath = parse(relativeSourcePath);
         const directory: string = join(this.processedDir, parsedPath.dir);
-        const baseName = parsedPath.name + (suffix ? `${suffix}` : '');
+        const qualitySuffix = quality ? `-q${quality}` : '';
+        const baseName = parsedPath.name + (suffix ? `${suffix}` : '') + qualitySuffix;
         const newExtension = format === originalFormat ? parsedPath.ext : `.${format}`;
         const savePath: string = join(directory, `${baseName}${newExtension}`);
 

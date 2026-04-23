@@ -9,6 +9,7 @@ import {
     HttpStatus,
     Param,
     Post,
+    Query,
     Res,
     UploadedFile,
     UseInterceptors
@@ -48,6 +49,7 @@ export class ImageController {
         @Param('processing_options') processingOptions: string,
         @Param('encrypted') encrypted: string,
         @Param('extension') extension: string,
+        @Query('quality') qualityQuery: string,
         @Headers('accept') acceptHeader: string,
         @Headers('if-none-match') clientETag: string,
         @Res() res: Response
@@ -70,6 +72,7 @@ export class ImageController {
                 clientETag,
                 processingOptions,
                 extension,
+                qualityQuery,
                 imageBuffer,
                 sourceFormat,
                 sourceReference: sourceURL,
@@ -92,6 +95,7 @@ export class ImageController {
     public async processUploadedImage(
         @Param('processing_options') processingOptions: string,
         @Param('extension') extension: string,
+        @Query('quality') qualityQuery: string,
         @Headers('accept') acceptHeader: string,
         @UploadedFile()
         file:
@@ -116,6 +120,7 @@ export class ImageController {
                 clientETag: '',
                 processingOptions,
                 extension,
+                qualityQuery,
                 imageBuffer: file.buffer,
                 sourceFormat,
                 sourceReference: file.originalname || 'uploaded-file'
@@ -137,6 +142,7 @@ export class ImageController {
         clientETag?: string;
         processingOptions: string;
         extension?: string;
+        qualityQuery?: string;
         imageBuffer: Buffer;
         sourceFormat?: ImageFormat;
         sourceReference: string;
@@ -148,12 +154,14 @@ export class ImageController {
             clientETag = '',
             processingOptions,
             extension,
+            qualityQuery = '',
             imageBuffer,
             sourceFormat,
             sourceReference,
             filePath
         } = options;
         const { width, height, suffix } = this.parserService.parseProcessingOptions(processingOptions);
+        const quality = this.parserService.parseQuality(qualityQuery);
         let format: ImageFormat | undefined = extension ? this.parserService.parseFormatFromExtension(extension) : sourceFormat;
 
         if (this.autoDetectWebp && acceptHeader.includes('image/webp')) {
@@ -166,13 +174,14 @@ export class ImageController {
                 fingerPrint: {
                     imageBuffer,
                     sourceFormat,
-                    format,
-                    width,
-                    height,
-                    suffix
-                },
-                sourceURL: sourceReference,
-                clientETag
+                        format,
+                        width,
+                        height,
+                        suffix,
+                        quality
+                    },
+                    sourceURL: sourceReference,
+                    clientETag
             });
             if (eTag) {
                 res.setHeader('ETag', eTag);
@@ -186,7 +195,7 @@ export class ImageController {
             }
         }
 
-        const processedImage = await this.imageProcessingService.processImage(imageBuffer, width, height, format);
+        const processedImage = await this.imageProcessingService.processImage(imageBuffer, width, height, format, quality);
         res.type(`image/${processedImage.format}`).end(processedImage.buffer);
         this.utilsService.handleResponse(null, HttpStatus.OK, `Processed and sent image for ${sourceReference}`);
 
@@ -195,7 +204,8 @@ export class ImageController {
                 sourcePath: sourceReference,
                 format: processedImage.format,
                 originalFormat: processedImage.originalFormat,
-                suffix
+                suffix,
+                quality
             });
             await this.imageProcessingService.saveProcessedImage(processedImage.buffer, savePathInfo);
             await this.cacheService.setCache(sourceReference, {
@@ -203,7 +213,8 @@ export class ImageController {
                 format,
                 width,
                 height,
-                suffix
+                suffix,
+                quality
             });
         }
     }

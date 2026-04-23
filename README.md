@@ -104,6 +104,11 @@ If you want to set **suffix** for the processed image, you can specify it as fol
 <processing_options> = rs:300:300:_s
 ```
 
+You can also set output quality for formats that support it (`jpeg`, `jpg`, `webp`, `avif`) with the `quality` query parameter:
+```bash
+http://your-domain.com/<signature>/rs:300:300/enc/<encrypted_source_url>?quality=80
+```
+
 You can also upload a source image directly with `multipart/form-data` and apply the same processing options without using the encrypted source URL flow:
 ```
 POST http://your-domain.com/upload/<processing_options>/<optional_output_extension>
@@ -114,6 +119,13 @@ Example:
 curl -X POST \
   -F "file=@/path/to/image.jpg" \
   http://your-domain.com/upload/rs:300:300/webp
+```
+
+Optional quality can be passed on the upload endpoint as well:
+```sh
+curl -X POST \
+  -F "file=@/path/to/image.jpg" \
+  "http://your-domain.com/upload/rs:300:300/webp?quality=80"
 ```
 
 The multipart field name must be `file`. The response body is the processed image, just like the GET endpoint.

@@ -55,6 +55,33 @@ describe('AppController (e2e)', () => {
         expect(metadata.height).toBe(20);
     });
 
+    it('/upload/rs:20:20/webp?quality=30 (POST)', async () => {
+        const imageBuffer = await sharp({
+            create: {
+                width: 80,
+                height: 60,
+                channels: 3,
+                background: { r: 0, g: 255, b: 0 }
+            }
+        })
+            .jpeg()
+            .toBuffer();
+
+        const response = await request(app.getHttpServer())
+            .post('/upload/rs:20:20/webp?quality=30')
+            .attach('file', imageBuffer, {
+                filename: 'fixture.jpg',
+                contentType: 'image/jpeg'
+            })
+            .expect(200);
+
+        expect(response.headers['content-type']).toContain('image/webp');
+        const metadata = await sharp(response.body).metadata();
+        expect(metadata.format).toBe('webp');
+        expect(metadata.width).toBe(20);
+        expect(metadata.height).toBe(20);
+    });
+
     it('/upload/rs:20:20/png without file (POST)', () => {
         return request(app.getHttpServer())
             .post('/upload/rs:20:20/png')

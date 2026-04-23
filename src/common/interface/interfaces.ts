@@ -17,6 +17,7 @@ export interface ImageCache {
     width?: number;
     height?: number;
     suffix?: string;
+    quality?: number;
 }
 
 export interface ImageFingerPrint extends ImageCache {

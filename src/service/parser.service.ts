@@ -85,4 +85,17 @@ export class ParserService {
 
         return { width, height, suffix };
     }
+
+    public parseQuality(quality?: string | number): number | undefined {
+        if (quality === undefined || quality === null || quality === '') {
+            return undefined;
+        }
+
+        const parsedQuality = typeof quality === 'number' ? quality : parseInt(quality, 10);
+        if (Number.isNaN(parsedQuality)) {
+            return undefined;
+        }
+
+        return Math.max(1, Math.min(100, parsedQuality));
+    }
 }
