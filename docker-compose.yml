@@ -1,6 +1,8 @@
 services:
   sharp-api:
-    image: carry0987/sharp-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
 
     # ✅ FIX: remove host binding, keep internal port
     ports:
