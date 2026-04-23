@@ -11,6 +11,14 @@ export class ParserService {
         return extension.toLowerCase() as ImageFormat;
     }
 
+    public parseFormatFromMimeType(mimeType?: string): ImageFormat | undefined {
+        if (!mimeType || !mimeType.startsWith('image/')) {
+            return undefined;
+        }
+
+        return this.parseFormatFromExtension(mimeType.split('/')[1]);
+    }
+
     public async parseImageFormat(sourcePath: string): Promise<ImageFormat | undefined> {
         let format: ImageFormat | undefined = this.parseFormatFromExtension(extname(sourcePath).substring(1));
 
@@ -27,6 +35,29 @@ export class ParserService {
         }
 
         return format;
+    }
+
+    public async parseImageFormatFromBuffer(buffer: Buffer, fileName?: string, mimeType?: string): Promise<ImageFormat | undefined> {
+        const formatFromMimeType = this.parseFormatFromMimeType(mimeType);
+        if (formatFromMimeType) {
+            return formatFromMimeType;
+        }
+
+        const formatFromFileName = this.parseFormatFromExtension(extname(fileName || '').substring(1));
+        if (formatFromFileName) {
+            return formatFromFileName;
+        }
+
+        try {
+            const fileType = await import('file-type');
+            const fileTypeResult = await fileType.fileTypeFromBuffer(buffer);
+
+            return fileTypeResult?.ext as ImageFormat | undefined;
+        } catch (error) {
+            console.error('Error determining uploaded image format:', error);
+
+            return undefined;
+        }
     }
 
     public parseProcessingOptions(processingOptions: string): ImageOption {
